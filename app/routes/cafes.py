@@ -14,12 +14,6 @@ def get_random_cafe():
     cafe = random.choice(cafes)
     return jsonify(cafe=cafe.to_dict())
 
-# -------------------- GET ALL --------------------
-@cafes_bp.route('/all', methods=['GET'])
-def get_all_cafes():
-    cafes = Cafe.query.all()
-    return jsonify(cafes=[cafe.to_dict() for cafe in cafes])
-
 # -------------------- POST ADD --------------------
 @cafes_bp.route('/add', methods=['POST'])
 def add_cafe():
@@ -49,3 +43,39 @@ def search_cafes_by_location():
         return jsonify(message="No cafes found for that location."), 404
     
     return jsonify(results=[cafe.to_dict() for cafe in results])
+
+# -------------------- GET FILTERED/SORTED/PAGINATED --------------------
+@cafes_bp.route('/cafes', methods=['GET'])
+def get_filtered_cafes():
+    query = Cafe.query
+
+    # Filtering
+    has_wifi = request.args.get('has_wifi')
+    if has_wifi is not None:
+        query = query.filter(Cafe.has_wifi == (has_wifi.lower() == "true"))
+
+    has_sockets = request.args.get('has_sockets')
+    if has_sockets is not None:
+        query = query.filter(Cafe.has_sockets == (has_sockets.lower() == "true"))
+
+    # Sorting
+    sort_by = request.args.get('sort')
+    if sort_by == 'name':
+        query = query.order_by(Cafe.name.asc())
+    elif sort_by == 'coffee_price':
+        query = query.order_by(Cafe.coffee_price.asc())
+
+    # Limit
+    limit = request.args.get('limit')
+    if limit is not None:
+        try:
+            limit = int(limit)
+            query = query.limit(limit)
+        except ValueError:
+            return jsonify(error="Invalid limit. Must be an integer."), 400
+
+    cafes = query.all()
+    if not cafes:
+        return jsonify(message="No cafes match the given filters."), 404
+
+    return jsonify(filtered_results=[cafe.to_dict() for cafe in cafes])
