@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, request
 from app.models import Cafe
 from app import db
 import random
+from app.utils.auth import is_authorized
 
 cafes_bp = Blueprint('cafes', __name__)
 
@@ -79,3 +80,32 @@ def get_filtered_cafes():
         return jsonify(message="No cafes match the given filters."), 404
 
     return jsonify(filtered_results=[cafe.to_dict() for cafe in cafes])
+
+# -------------------- PATCH UPDATE PRICE (API Key) --------------------
+@cafes_bp.route('/cafes/<int:cafe_id>/update-price', methods=['PATCH'])
+def update_cafe_price(cafe_id):
+    if not is_authorized(request):
+        return jsonify(error="Unauthorized. Missing or invalid API key."), 403
+
+    new_price = request.args.get('new_price')
+    cafe = Cafe.query.get(cafe_id)
+    if cafe:
+        cafe.coffee_price = new_price
+        db.session.commit()
+        return jsonify(response={"success": f"Updated cafe {cafe.name} price to {new_price}."})
+    else:
+        return jsonify(error="Cafe not found."), 404
+
+# -------------------- DELETE CAFE (API Key) --------------------
+@cafes_bp.route('/cafes/<int:cafe_id>', methods=['DELETE'])
+def delete_cafe(cafe_id):
+    if not is_authorized(request):
+        return jsonify(error="Unauthorized. Missing or invalid API key."), 403
+
+    cafe = Cafe.query.get(cafe_id)
+    if cafe:
+        db.session.delete(cafe)
+        db.session.commit()
+        return jsonify(response={"success": f"Cafe {cafe.name} deleted."})
+    else:
+        return jsonify(error="Cafe not found."), 404
