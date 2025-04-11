@@ -6,7 +6,6 @@ from app.utils.auth import is_authorized
 
 cafes_bp = Blueprint('cafes', __name__)
 
-# -------------------- GET RANDOM --------------------
 @cafes_bp.route('/random', methods=['GET'])
 def get_random_cafe():
     cafes = Cafe.query.all()
@@ -15,7 +14,6 @@ def get_random_cafe():
     cafe = random.choice(cafes)
     return jsonify(cafe=cafe.to_dict())
 
-# -------------------- POST ADD --------------------
 @cafes_bp.route('/add', methods=['POST'])
 def add_cafe():
     data = request.form
@@ -31,7 +29,6 @@ def add_cafe():
     db.session.commit()
     return jsonify(response={"success": "Cafe added."}), 201
 
-# -------------------- GET SEARCH BY LOCATION --------------------
 @cafes_bp.route('/cafes/search', methods=['GET'])
 def search_cafes_by_location():
     location_query = request.args.get('location')
@@ -45,12 +42,10 @@ def search_cafes_by_location():
     
     return jsonify(results=[cafe.to_dict() for cafe in results])
 
-# -------------------- GET FILTERED/SORTED/PAGINATED --------------------
 @cafes_bp.route('/cafes', methods=['GET'])
 def get_filtered_cafes():
     query = Cafe.query
 
-    # Filtering
     has_wifi = request.args.get('has_wifi')
     if has_wifi is not None:
         query = query.filter(Cafe.has_wifi == (has_wifi.lower() == "true"))
@@ -59,14 +54,12 @@ def get_filtered_cafes():
     if has_sockets is not None:
         query = query.filter(Cafe.has_sockets == (has_sockets.lower() == "true"))
 
-    # Sorting
     sort_by = request.args.get('sort')
     if sort_by == 'name':
         query = query.order_by(Cafe.name.asc())
     elif sort_by == 'coffee_price':
         query = query.order_by(Cafe.coffee_price.asc())
 
-    # Limit
     limit = request.args.get('limit')
     if limit is not None:
         try:
@@ -81,7 +74,6 @@ def get_filtered_cafes():
 
     return jsonify(filtered_results=[cafe.to_dict() for cafe in cafes])
 
-# -------------------- PATCH UPDATE PRICE (API Key) --------------------
 @cafes_bp.route('/cafes/<int:cafe_id>/update-price', methods=['PATCH'])
 def update_cafe_price(cafe_id):
     if not is_authorized(request):
@@ -96,7 +88,6 @@ def update_cafe_price(cafe_id):
     else:
         return jsonify(error="Cafe not found."), 404
 
-# -------------------- DELETE CAFE (API Key) --------------------
 @cafes_bp.route('/cafes/<int:cafe_id>', methods=['DELETE'])
 def delete_cafe(cafe_id):
     if not is_authorized(request):
@@ -110,7 +101,6 @@ def delete_cafe(cafe_id):
     else:
         return jsonify(error="Cafe not found."), 404
 
-# -------------------- API DOCUMENTATION --------------------
 @cafes_bp.route('/docs', methods=['GET'])
 def api_docs():
     docs = {
