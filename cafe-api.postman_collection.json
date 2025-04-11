@@ -1,0 +1,52 @@
+{
+	"info": {
+		"_postman_id": "e31490ce-c8aa-46b1-99ce-64f337e51c9a",
+		"name": "Cafe RESTful API",
+		"description": "A REST API for managing cafes. Includes secure PATCH/DELETE, filtering, and full docs.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "43968658",
+		"_collection_link": "https://cybersecurity-2548422.postman.co/workspace/Cyber-Security's-Workspace~e7806acc-98f9-4529-811e-1e134afb3164/collection/43968658-e31490ce-c8aa-46b1-99ce-64f337e51c9a?action=share&source=collection_link&creator=43968658"
+	},
+	"item": [
+		{
+			"name": "Get All Cafes (Filtered)",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Search Cafes by Location",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Add New Cafe",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Update Cafe Price",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Cafe",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		}
+	]
+}
