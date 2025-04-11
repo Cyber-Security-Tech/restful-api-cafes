@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Api
+from flask_cors import CORS
 
 db = SQLAlchemy()
 api = Api()
@@ -12,8 +13,8 @@ def create_app():
 
     db.init_app(app)
     api.init_app(app)
+    CORS(app)  
 
-    # Register Blueprints
     from .routes.cafes import cafes_bp
     app.register_blueprint(cafes_bp)
 
