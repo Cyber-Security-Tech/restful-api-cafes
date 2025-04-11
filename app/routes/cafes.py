@@ -109,3 +109,61 @@ def delete_cafe(cafe_id):
         return jsonify(response={"success": f"Cafe {cafe.name} deleted."})
     else:
         return jsonify(error="Cafe not found."), 404
+
+# -------------------- API DOCUMENTATION --------------------
+@cafes_bp.route('/docs', methods=['GET'])
+def api_docs():
+    docs = {
+        "endpoints": [
+            {
+                "route": "/random",
+                "method": "GET",
+                "description": "Returns a random cafe."
+            },
+            {
+                "route": "/cafes",
+                "method": "GET",
+                "description": "Returns all cafes with optional filters, sorting, and limit.",
+                "query_params": {
+                    "has_wifi": "true/false",
+                    "has_sockets": "true/false",
+                    "sort": "name / coffee_price",
+                    "limit": "integer"
+                }
+            },
+            {
+                "route": "/cafes/search",
+                "method": "GET",
+                "description": "Search cafes by location.",
+                "query_params": {
+                    "location": "string (e.g. New York)"
+                }
+            },
+            {
+                "route": "/add",
+                "method": "POST",
+                "description": "Add a new cafe.",
+                "form_fields": ["name", "location", "has_wifi", "has_sockets", "has_toilet", "coffee_price"]
+            },
+            {
+                "route": "/cafes/<id>/update-price",
+                "method": "PATCH",
+                "description": "Update the coffee price of a cafe.",
+                "query_params": {
+                    "new_price": "string (e.g. $2.99)"
+                },
+                "headers": {
+                    "x-api-key": "TopSecretAPIKey"
+                }
+            },
+            {
+                "route": "/cafes/<id>",
+                "method": "DELETE",
+                "description": "Delete a cafe by ID.",
+                "headers": {
+                    "x-api-key": "TopSecretAPIKey"
+                }
+            }
+        ]
+    }
+    return jsonify(docs)
