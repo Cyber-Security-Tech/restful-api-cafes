@@ -1,21 +1,32 @@
+"""
+cafes.py – Defines all RESTful routes for the Café API.
+
+Handles creation, querying, filtering, updating, and deletion of cafe data.
+Includes API key authentication for protected routes.
+"""
+
 from flask import Blueprint, jsonify, request
 from app.models import Cafe
 from app import db
-import random
 from app.utils.auth import is_authorized
+import random
 
 cafes_bp = Blueprint('cafes', __name__)
 
+
 @cafes_bp.route('/random', methods=['GET'])
 def get_random_cafe():
+    """Return a random cafe from the database."""
     cafes = Cafe.query.all()
     if not cafes:
         return jsonify(error="No cafes found."), 404
     cafe = random.choice(cafes)
     return jsonify(cafe=cafe.to_dict())
 
+
 @cafes_bp.route('/add', methods=['POST'])
 def add_cafe():
+    """Add a new cafe using form data."""
     data = request.form
     new_cafe = Cafe(
         name=data.get('name'),
@@ -29,37 +40,41 @@ def add_cafe():
     db.session.commit()
     return jsonify(response={"success": "Cafe added."}), 201
 
+
 @cafes_bp.route('/cafes/search', methods=['GET'])
 def search_cafes_by_location():
+    """Search cafes by location using a query string."""
     location_query = request.args.get('location')
     if not location_query:
         return jsonify(error="Please provide a location query using ?location=CityName"), 400
 
     results = Cafe.query.filter(Cafe.location.ilike(f"%{location_query}%")).all()
-    
     if not results:
         return jsonify(message="No cafes found for that location."), 404
-    
+
     return jsonify(results=[cafe.to_dict() for cafe in results])
+
 
 @cafes_bp.route('/cafes', methods=['GET'])
 def get_filtered_cafes():
+    """Return cafes with optional filters, sorting, and limits."""
     query = Cafe.query
 
-    has_wifi = request.args.get('has_wifi')
-    if has_wifi is not None:
+    # Boolean filtering
+    if (has_wifi := request.args.get('has_wifi')) is not None:
         query = query.filter(Cafe.has_wifi == (has_wifi.lower() == "true"))
 
-    has_sockets = request.args.get('has_sockets')
-    if has_sockets is not None:
+    if (has_sockets := request.args.get('has_sockets')) is not None:
         query = query.filter(Cafe.has_sockets == (has_sockets.lower() == "true"))
 
+    # Sorting
     sort_by = request.args.get('sort')
     if sort_by == 'name':
         query = query.order_by(Cafe.name.asc())
     elif sort_by == 'coffee_price':
         query = query.order_by(Cafe.coffee_price.asc())
 
+    # Limit
     limit = request.args.get('limit')
     if limit is not None:
         try:
@@ -74,8 +89,10 @@ def get_filtered_cafes():
 
     return jsonify(filtered_results=[cafe.to_dict() for cafe in cafes])
 
+
 @cafes_bp.route('/cafes/<int:cafe_id>/update-price', methods=['PATCH'])
 def update_cafe_price(cafe_id):
+    """Update the coffee price of a specific cafe (auth required)."""
     if not is_authorized(request):
         return jsonify(error="Unauthorized. Missing or invalid API key."), 403
 
@@ -85,11 +102,12 @@ def update_cafe_price(cafe_id):
         cafe.coffee_price = new_price
         db.session.commit()
         return jsonify(response={"success": f"Updated cafe {cafe.name} price to {new_price}."})
-    else:
-        return jsonify(error="Cafe not found."), 404
+    return jsonify(error="Cafe not found."), 404
+
 
 @cafes_bp.route('/cafes/<int:cafe_id>', methods=['DELETE'])
 def delete_cafe(cafe_id):
+    """Delete a cafe by ID (auth required)."""
     if not is_authorized(request):
         return jsonify(error="Unauthorized. Missing or invalid API key."), 403
 
@@ -98,11 +116,12 @@ def delete_cafe(cafe_id):
         db.session.delete(cafe)
         db.session.commit()
         return jsonify(response={"success": f"Cafe {cafe.name} deleted."})
-    else:
-        return jsonify(error="Cafe not found."), 404
+    return jsonify(error="Cafe not found."), 404
+
 
 @cafes_bp.route('/docs', methods=['GET'])
 def api_docs():
+    """Return static JSON documentation for all endpoints."""
     docs = {
         "endpoints": [
             {
